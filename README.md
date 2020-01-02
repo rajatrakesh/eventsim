@@ -139,21 +139,23 @@ If you would like to test this out, the following instructions will help deploy 
 
 To deploy this on AWS:
 
-* launch a m5.large instance (2 vcpu, 8 GB RAM) using Centos 7. It will likely work on a smaller instance as well, but given the amount of data you may wish to generate, I am keeping the instance a bit more on the generous side. 
-* Assign 100 GiB on EBS storage.
-* Once the instance is launched, let's install git so that you can mirror my repository.
+Llaunch a m5.large instance (2 vcpu, 8 GB RAM) using Centos 7. It will likely work on a smaller instance as well, but given the amount of data you may wish to generate, I am keeping the instance a bit more on the generous side. 
+
+Assign 100 GiB on EBS storage.
+
+Once the instance is launched, let's install git so that you can mirror my repository.
 
 ```
 $ sudo yum install git
 ```
 
-- We will now install Java8. Since the JAXB libraries were deprecated/discontinued from Java in newer releases, hence you would need to install Java8. 
+We will now install Java8. Since the JAXB libraries were deprecated/discontinued from Java in newer releases, hence you would need to install Java8. 
 
 ```
 $ sudo yum install java-1.8.0-openjdk-devel
 ```
 
-- Let's setup the JAVA_HOME Environment Variable. First, locate where Java is installed:
+Let's setup the JAVA_HOME Environment Variable. First, locate where Java is installed:
 
 ```
 sudo update-alternatives --config java
@@ -167,13 +169,13 @@ There is 1 program that provides 'java'.
 Enter to keep the current selection[+], or type selection number:
 ```
 
-- Copy this location and put this in the .bash_profile
+Copy this location and put this in the .bash_profile
 
 ```
 vi .bash_profile
 ```
 
-- Add the following line at the bottom of the file, to specify the JAVA_HOME location
+Add the following line at the bottom of the file, to specify the JAVA_HOME location
 
 ```
 # .bash_profile
@@ -191,7 +193,7 @@ export PATH
 export JAVA_HOME
 ```
 
-- Clone the git repository
+Clone the git repository
 
 ```
 $ git clone https://github.com/rajatrakesh/eventsim
@@ -204,7 +206,7 @@ Receiving objects: 100% (11482/11482), 118.40 MiB | 16.73 MiB/s, done.
 Resolving deltas: 100% (2374/2374), done.
 ```
 
-- This project uses SBT.  RPM package is officially supported by SBT, and let's install it.
+This project uses SBT.  RPM package is officially supported by SBT, and let's install it.
 
 ```
 $ curl https://bintray.com/sbt/rpm/rpm | sudo tee /etc/yum.repos.d/bintray-sbt-rpm.repo
@@ -214,7 +216,7 @@ Installed:
   sbt.noarch 0:1.3.6-0
 ```
 
-- Once SBT is installed, we need to clean and compile our project. This will also install scala-sbt and other libraries and takes a while for the download and the installation to complete. You may get a few warnings but unless there are errors, you are good to go. 
+Once SBT is installed, we need to clean and compile our project. This will also install scala-sbt and other libraries and takes a while for the download and the installation to complete. You may get a few warnings but unless there are errors, you are good to go. 
 
 ```
 $ cd eventsim
@@ -379,11 +381,6 @@ If you have a S3 bucket setup, you can copy the files created:
 $aws s3 cp data/fake1.json s3://mybucket/demodata/
 upload: data/fake1.json to s3://mybucket/demodata/fake1.json
 ```
-
-License
-=======
-
-We have adopted the MIT license (see the file LICENSE.txt) for this project.
 
 About the source data
 =====================
