@@ -77,7 +77,8 @@ object Main extends App {
 
     val realTime = toggle("continuous", default = Some(false),
       descrYes = "continuous output", descrNo = "run all at once")
-
+	
+    verify()
   }
 
   val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {

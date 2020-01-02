@@ -1,17 +1,18 @@
 name := "eventsim"
 
-version := "1.0"
+version := "2.0"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.12.4"
 
-libraryDependencies += "org.apache.commons" % "commons-math3" % "3.5"
+libraryDependencies ++= Seq(
+  "org.apache.avro" % "avro" % "1.7.7",
+  "org.apache.commons" % "commons-math3" % "3.6",
+  "de.jollyday" % "jollyday" % "0.5.1",
+  "org.rogach" %% "scallop" % "3.1.1",
+  "com.fasterxml.jackson.core" % "jackson-core" % "2.7.0",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.7.0",
+  "org.apache.kafka" % "kafka_2.12" % "0.10.1.1",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+)
 
-libraryDependencies += "de.jollyday" % "jollyday" % "0.5.1"
-
-libraryDependencies += "org.rogach" %% "scallop" % "0.9.5"
-
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.6.1"
-
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.1"
-
-libraryDependencies += "org.apache.kafka" % "kafka_2.10" % "0.8.2.1"
+// libraryDependencies += "io.confluent" % "kafka-avro-serializer" % "2.0.0"
