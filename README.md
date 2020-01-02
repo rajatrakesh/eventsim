@@ -132,59 +132,6 @@ Example for more events (30,000 users for a year, growing at 30% annually):
 
     $ bin/eventsim -c "examples/site.json" --from 365 --nusers 30000 --growth-rate 0.30 data/fake.json
 
-Building huge data sets in parallel
-===================================
-You can run multiple instances of this application simultaneously if you need to generate a lot of data very quickly.
-To do this, we recommend the following strategy:
-
-* Use a different random seed for each instance. This assures that each instance will produce different data.
-* Use a different starting user id for each instance (and make sure the ranges don't overlap). This assures that each instance will produce data with different user ids.
-* Create a set of configuration files, one for each instance of eventsim. This will help you re-create your data, and help you remember the details of the data
-* Do not generate data for different time periods. The generator doesn't generate full sessions if they cross the start and end dates; you will find some incomplete data between files.
-
-A Cool Example
-==============
-
-To simulate A/B tests, create multiple data sets for the same time period with different sets of member ids, different tags, and different  parameters for alpha, beta, transition probabilities, or growth rates. For example, you can geneate two files of about 5000 users with different characteristics with two commands like this:
-
-        $ bin/eventsim --config examples/example-config.json --tag control -n 5000 \
-        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
-        --growth-rate 0.25 --userid 1 --randomseed 1 control.data.json
-        Loading song file...
-        385000	...done loading song file. 385252 tracks loaded.
-        Loading similar song file...
-        Could not load similar song file (don't worry if it's missing)
-    
-        Initial number of users: 5000, Final number of users: 5335
-        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
-        Starting to generate events.
-        Damping=0.09375, Weekend-Damping=0.5
-        Now: 2015-08-31T15:38:02, Events:1430000, Rate: 147058 eps
-    
-        $bin/eventsim --config examples/alt-example-config.json --tag test -n 5000 \
-        > --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
-        > --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
-        Loading song file...
-        385000	...done loading song file. 385252 tracks loaded.
-        Loading similar song file...
-        Could not load similar song file (don't worry if it's missing)
-    
-        Initial number of users: 5000, Final number of users: 5352
-        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
-        Starting to generate events.
-        Damping=0.09425, Weekend-Damping=0.53
-        Now: 2015-08-31T20:25:04, Events:1870000, Rate: 114942 eps
-
-Issues and Future Work
-======================
-
-Want to pitch in and help? Here are some ideas on ways to make this better?
-
-* The generator multi-threaded yet, but there isn't a good reason that we can't do that. (The only state that needs to be shared between threads is the priority queue, and access to that can be easily controlled).
-* The models to generate data could also use more work. We made some rough guesses based on experience, but aren't sure how well they reflect reality. (In particular, the sine curve for cycles bugs me.)
-* The simulator is tied closely to simulating a web site, specifically a music web site. It would be great to make the simulation more abstract, so that different configuration files could be used for dramatically different use cases.
-* This is written by a novice Scala programmer. An expert could improve the code quality.
-
 Deploying a workable example on AWS
 ======================
 
@@ -307,12 +254,135 @@ $ sbt assembly
 [info] Packaging /home/centos/eventsim/target/scala-2.12/eventsim-assembly-2.0.jar ...
 [info] Done packaging.
 [success] Total time: 6 s, completed Jan 2, 2020 5:00:51 AM
+
+$ # make sure the script is executable
+$ chmod +x bin/eventsim
 ```
 
+Finally, let's create a test file to validate that everything works. We will create a file fake.json in the data directory.
 
+```
+bin/eventsim -c "examples/site.json" --from 365 --nusers 1000 --growth-rate 0.01 data/fake.json
+Loading song file...
+385000	...done loading song file. 385252 tracks loaded.
+Loading similar song file...
+Could not load similar song file (don't worry if it's missing)
+
+Initial number of users: 1000, Final number of users: 1011
+Start: 2019-01-02T05:04:37.498, End: 2020-01-01T05:04:37.498
+Starting to generate events.
+Damping=0.09375, Weekend-Damping=0.5
+Now: 2019-12-30T12:57:22.498, Events:1430000, Rate: 169491 eps
+```
+
+The data being written to the fake.json should look like the following:
+
+```
+$ tail -f data/fake.json
+..
+..
+{"ts":1577855067498,"userId":"311","sessionId":107524,"page":"NextSong","auth":"Logged In","method":"PUT","status":200,"level":"paid","itemInSession":20,"location":"Detroit-Warren-Dearborn, MI","userAgent":"Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko","lastName":"Turner","firstName":"David","registration":1546117925498,"gender":"M","artist":"Muse","song":"Twin","length":197.48526}
+{"ts":1577855099498,"userId":"555","sessionId":108643,"page":"NextSong","auth":"Logged In","method":"PUT","status":200,"level":"paid","itemInSession":15,"location":"Keene, NH","userAgent":"\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.78.2 (KHTML, like Gecko) Version/7.0.6 Safari/537.78.2\"","lastName":"Harvey","firstName":"Janey","registration":1546330619498,"gender":"F","artist":"Enya","song":"Boadicea","length":212.29669}
+```
+
+A Cool Example
+==============
+
+To simulate A/B tests, create multiple data sets for the same time period with different sets of member ids, different tags, and different  parameters for alpha, beta, transition probabilities, or growth rates. For example, you can geneate two files of about 5000 users with different characteristics with two commands like this:
+
+        $ bin/eventsim --config examples/example-config.json --tag control -n 5000 \
+        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        --growth-rate 0.25 --userid 1 --randomseed 1 control.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+    
+        Initial number of users: 5000, Final number of users: 5335
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09375, Weekend-Damping=0.5
+        Now: 2015-08-31T15:38:02, Events:1430000, Rate: 147058 eps
+    
+        $bin/eventsim --config examples/alt-example-config.json --tag test -n 5000 \
+        > --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        > --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+    
+        Initial number of users: 5000, Final number of users: 5352
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09425, Weekend-Damping=0.53
+        Now: 2015-08-31T20:25:04, Events:1870000, Rate: 114942 eps
+
+Building huge data sets in parallel
+===================================
+
+You can run multiple instances of this application simultaneously if you need to generate a lot of data very quickly.
+To do this, we recommend the following strategy:
+
+* Use a different random seed for each instance. This assures that each instance will produce different data.
+* Use a different starting user id for each instance (and make sure the ranges don't overlap). This assures that each instance will produce data with different user ids.
+* Create a set of configuration files, one for each instance of eventsim. This will help you re-create your data, and help you remember the details of the data
+* Do not generate data for different time periods. The generator doesn't generate full sessions if they cross the start and end dates; you will find some incomplete data between files.
+
+        $ bin/eventsim --config examples/example-config.json --tag control -n 5000 \
+        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        --growth-rate 0.25 --userid 1 --randomseed 1 control.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+    
+        Initial number of users: 5000, Final number of users: 5335
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09375, Weekend-Damping=0.5
+        Now: 2015-08-31T15:38:02, Events:1430000, Rate: 147058 eps
+    
+        $bin/eventsim --config examples/alt-example-config.json --tag test -n 5000 \
+        > --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        > --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+    
+        Initial number of users: 5000, Final number of users: 5352
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09425, Weekend-Damping=0.53
+        Now: 2015-08-31T20:25:04, Events:1870000, Rate: 114942 eps
+
+Bonus: Replicating Data to S3 bucket
+=======
+
+Since you may wish to use the generated data for multiple use-cases, it's good to copy over the generated files into an S3 bucket, especially if you don't wish to keep the instance running. Here's how you do it.
+
+```
+#Lets install the AWS CLI
+$ sudo yum install awscli
+#Configure awscli with your credentials
+$ aws configure
+AWS Access Key ID [None]: AKXXXXXXXXXXXXXQ
+AWS Secret Access Key [None]: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Default region name [None]: ap-southeast-1
+Default output format [None]:
+```
+
+If you have a S3 bucket setup, you can copy the files created:
+
+```
+$aws s3 cp data/fake1.json s3://mybucket/demodata/
+upload: data/fake1.json to s3://mybucket/demodata/fake1.json
+```
 
 License
 =======
+
 We have adopted the MIT license (see the file LICENSE.txt) for this project.
 
 About the source data
@@ -338,25 +408,12 @@ Location names are from the Census Bureau (see https://www.census.gov/popest/dat
 
 User agents are from http://techblog.willshouse.com/2012/01/03/most-common-user-agents/
 
-For the real novice
-===================
+Issues and Future Work
+======================
 
-If you aren't familiar with the Java toolkit (and Scala), here's a few commands to get your started.
+Want to pitch in and help? Here are some ideas on ways to make this better?
 
-On a Mac, you'll need to install Java 8 and Scala. I use Homebrew for package management, so I can just
-install it with this command:
-
-    $ brew install scala
-
-On Linux (specifically Ubuntu), it's a little more complicated. Here's what works for me:
-
-    $ echo "deb http://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-    $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
-    $ sudo apt-get update
-    $ sudo apt-get install openjdk-8-jdk scala sbt
-
-To build the executable, run
-
-    $ sbt assembly
-    $ # make sure the script is executable
-    $ chmod +x bin/eventsim
+* The generator multi-threaded yet, but there isn't a good reason that we can't do that. (The only state that needs to be shared between threads is the priority queue, and access to that can be easily controlled).
+* The models to generate data could also use more work. We made some rough guesses based on experience, but aren't sure how well they reflect reality. (In particular, the sine curve for cycles bugs me.)
+* The simulator is tied closely to simulating a web site, specifically a music web site. It would be great to make the simulation more abstract, so that different configuration files could be used for dramatically different use cases.
+* This is written by a novice Scala programmer. An expert could improve the code quality.
